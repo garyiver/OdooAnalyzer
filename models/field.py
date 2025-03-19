@@ -1,7 +1,6 @@
 """Field definition class for Odoo analyzer"""
 from pathlib import Path
-from .. import config
-
+import config
 
 def get_module_name(file_path):
     """Extract module name from file path"""
@@ -31,7 +30,12 @@ class FieldDefinition:
         self.file_path = file_path
         self.module = get_module_name(file_path)
         self.is_computed = 'compute' in attributes
-        self.is_stored = attributes.get('store', 'False') == 'True'
+        # If 'store' is explicitly set, use that value
+        if 'store' in attributes:
+            store_value = attributes['store'].lower()
+            self.is_stored = store_value in ('true', '1', 'yes', 't')
+        else:
+            self.is_stored = not self.is_computed
         self.is_related = 'related' in attributes
         self.dependency_fields = []  # For computed fields
         self.usage_count = 0

@@ -2,7 +2,7 @@
 import ast
 import logging
 import os
-from ..utils.file_utils import get_module_name
+from utils.file_utils import get_module_name
 
 logger = logging.getLogger(__name__)
 

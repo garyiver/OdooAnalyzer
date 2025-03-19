@@ -1,9 +1,9 @@
 """Python file parser for Odoo analyzer"""
 import ast
 import logging
-import os
-from ..utils.file_utils import get_files, get_module_name
-from ..models.field import FieldDefinition
+import sys
+from utils.file_utils import get_files, get_module_name
+from models.field import FieldDefinition
 
 
 logger = logging.getLogger(__name__)
@@ -17,8 +17,13 @@ class ModelVisitor(ast.NodeVisitor):
         self.registry = registry
         self.current_class = None
 
-    def visit_ClassDef(self, node):
-        """Process class definitions to identify Odoo models"""
+    def visit_ClassDef(self, node, depth=0):
+        """Process class definitions to identify Odoo models with depth limit"""
+        # Add a maximum depth to prevent infinite recursion
+        if depth > 100:  # Choose an appropriate max depth
+            logger.warning(f"Maximum class visit depth reached for {node.name}")
+            return
+
         old_class = self.current_class
         self.current_class = node.name
 
@@ -74,7 +79,7 @@ class ModelVisitor(ast.NodeVisitor):
                 # Map the class to the first inherited model for field discovery
                 self.registry.class_to_model[node.name] = inherits[0]
 
-        # Continue with child nodes
+        # Continue with child nodes.
         self.generic_visit(node)
         self.current_class = old_class
 

@@ -2,9 +2,9 @@
 import logging
 import os
 import re
-from ..utils.file_utils import get_files, get_module_name
-from ..models.field_usage import FieldUsage
 from collections import defaultdict
+from utils.file_utils import get_files, get_module_name
+from models.field_usage import FieldUsage
 
 logger = logging.getLogger(__name__)
 
@@ -65,63 +65,78 @@ def classify_xml_record(record, registry):
     return RECORD_TYPE_UNKNOWN
 
 
-def find_parent_record(elem, root):
-    """Find the parent record element for an XML element"""
+def find_parent_record(elem, root, max_depth=100):
+    """
+    Find the parent record element for an XML element with a depth limit
+    to prevent recursion errors
+    """
+    depth = 0
     parent = elem
 
     # Try to navigate up the tree to find the record
-    while parent is not None and parent != root:
+    while parent is not None and parent != root and depth < max_depth:
         if parent.tag == 'record':
             return parent
 
+        depth += 1
+
         # Try to move up to the parent
         try:
             # This works for lxml
             parent = parent.getparent()
         except (AttributeError, NameError):
-            # Fallback for standard ElementTree
-            # This is a limited implementation - standard ElementTree doesn't track parents
-            # Find all elements that contain this element as a child
-            for potential_parent in root.findall('.//*'):
-                if elem in list(potential_parent):
+            # Fallback for standard ElementTree - limit search to direct children
+            # This avoids deep recursion
+            for potential_parent in list(root)[:100]:  # Limit search to first 100 children
+                if elem in list(potential_parent)[:100]:  # Only check first 100 children
                     parent = potential_parent
                     break
             else:
                 # No parent found
                 parent = None
 
-    # No record found
+    # No record found or max depth reached
+    if depth >= max_depth:
+        logger.warning(f"Max depth reached while finding parent record for {elem.tag}")
+
     return None
 
 
-def find_parent_template_id(field_elem, root):
-    """Find the ID of the parent template for a field element"""
+def find_parent_template_id(field_elem, root, max_depth=100):
+    """
+    Find the ID of the parent template for a field element with a depth limit
+    to prevent recursion errors
+    """
+    depth = 0
     parent = field_elem
 
     # Try to navigate up the tree to find the template
-    while parent is not None and parent != root:
+    while parent is not None and parent != root and depth < max_depth:
         if parent.tag == 'template' and 'id' in parent.attrib:
             return parent.attrib['id']
+
+        depth += 1
 
         # Try to move up to the parent
         try:
             # This works for lxml
             parent = parent.getparent()
         except (AttributeError, NameError):
-            # Fallback for standard ElementTree
-            # This is a limited implementation - standard ElementTree doesn't track parents
-            # Find all elements that contain this element as a child
-            for potential_parent in root.findall('.//*'):
-                if field_elem in list(potential_parent):
+            # Fallback for standard ElementTree - limit search to direct children
+            # This avoids deep recursion
+            for potential_parent in list(root)[:100]:  # Limit search to first 100 children
+                if field_elem in list(potential_parent)[:100]:  # Only check first 100 children
                     parent = potential_parent
                     break
             else:
                 # No parent found
                 parent = None
 
-    # No template ID found
-    return None
+    # No template ID found or max depth reached
+    if depth >= max_depth:
+        logger.warning(f"Max depth reached while finding parent template for {field_elem.tag}")
 
+    return None
 
 def extract_view_definitions(root, registry, module):
     """Extract view definitions and models from XML"""
@@ -159,12 +174,6 @@ def extract_view_definitions(root, registry, module):
             type_field = record.find("./field[@name='type']")
             if type_field is not None and type_field.text:
                 view_type = type_field.text
-
-            # Check arch field for view definition
-            arch_field = record.find("./field[@name='arch']")
-            if arch_field is not None:
-                # This is where the actual view definition is
-                pass
 
             # Register the view
             registry.register_view(record_id, model_name, inherit_id, view_type)
@@ -212,6 +221,7 @@ def extract_standard_fields(root, registry, module, file_path, field_usages, cla
         record_id = None
         model_name = None
         record_type = RECORD_TYPE_UNKNOWN
+        view_type = None
 
         if record is not None:
             if record in classified_records:
@@ -221,9 +231,9 @@ def extract_standard_fields(root, registry, module, file_path, field_usages, cla
 
                 # For view records, try to find model from view definition
                 if record_type == RECORD_TYPE_VIEW and record_data['model'] == 'ir.ui.view':
-                    view_model = registry.resolve_view_model(record_id)
-                    if view_model:
-                        model_name = view_model
+                    view_info = registry.views.get(record_id, {})
+                    model_name = view_info.get('model')
+                    view_type = view_info.get('view_type')
                 # For data records, use the record model
                 elif record_type == RECORD_TYPE_DATA:
                     model_name = record_data['model']
@@ -235,9 +245,9 @@ def extract_standard_fields(root, registry, module, file_path, field_usages, cla
 
                 if record.get('model') == 'ir.ui.view':
                     record_type = RECORD_TYPE_VIEW
-                    view_model = registry.resolve_view_model(record_id)
-                    if view_model:
-                        model_name = view_model
+                    view_info = registry.views.get(record_id, {})
+                    model_name = view_info.get('model')
+                    view_type = view_info.get('view_type')
                 elif record.get('model') in registry.models:
                     record_type = RECORD_TYPE_DATA
                     model_name = record.get('model')
@@ -259,6 +269,7 @@ def extract_standard_fields(root, registry, module, file_path, field_usages, cla
         context = record_id if record_id else os.path.basename(file_path)
         usage = FieldUsage(field_key, context, module, file_path, model_name)
         usage.record_type = record_type  # Add record type information
+        usage.view_type = view_type if view_type else ''  # Add view type if available
         field_usages.append(usage)
 
 
@@ -370,6 +381,7 @@ def add_qweb_field_usage(field_name, model_name, field_elem, registry, module, f
     # QWeb fields are always used in views/templates
     usage = FieldUsage(field_key, context, module, file_path, model_name)
     usage.record_type = RECORD_TYPE_VIEW  # QWeb fields are in views
+    usage.view_type = 'qweb'  # Mark as qweb template
     field_usages.append(usage)
 
 
@@ -408,6 +420,7 @@ def process_field_matches(matches, elem, root, registry, module, file_path, fiel
 
         record_id = None
         record_type = RECORD_TYPE_UNKNOWN
+        view_type = None
 
         if record is not None:
             if record in classified_records:
@@ -417,9 +430,9 @@ def process_field_matches(matches, elem, root, registry, module, file_path, fiel
 
                 # For view records, try to find model from view definition
                 if record_type == RECORD_TYPE_VIEW and record_data['model'] == 'ir.ui.view':
-                    view_model = registry.resolve_view_model(record_id)
-                    if view_model:
-                        model_name = view_model
+                    view_info = registry.views.get(record_id, {})
+                    model_name = view_info.get('model')
+                    view_type = view_info.get('view_type')
                 # For data records, use the record model
                 elif record_type == RECORD_TYPE_DATA:
                     model_name = record_data['model']
@@ -431,9 +444,9 @@ def process_field_matches(matches, elem, root, registry, module, file_path, fiel
 
                 if record.get('model') == 'ir.ui.view':
                     record_type = RECORD_TYPE_VIEW
-                    view_model = registry.resolve_view_model(record_id)
-                    if view_model:
-                        model_name = view_model
+                    view_info = registry.views.get(record_id, {})
+                    model_name = view_info.get('model')
+                    view_type = view_info.get('view_type')
                 elif record.get('model') in registry.models:
                     record_type = RECORD_TYPE_DATA
                     model_name = record.get('model')
@@ -455,39 +468,57 @@ def process_field_matches(matches, elem, root, registry, module, file_path, fiel
         context = record_id if record_id else os.path.basename(file_path)
         usage = FieldUsage(field_key, context, module, file_path, model_name)
         usage.record_type = record_type
+        usage.view_type = view_type if view_type else ''
         field_usages.append(usage)
 
 
 def parse_xml_file(file_path, registry):
-    """Parse XML file to extract field usage information"""
+    """Parse XML file to extract field usage information with better error handling"""
     try:
         # Track field usage in this file
         field_usages = []
 
-        # Parse the XML file
+        # Parse the XML file with robust error handling
         try:
-            # Attempt to parse with proper namespace handling (for lxml)
-            parser = ET.XMLParser(ns_clean=True, recover=True)
-            tree = ET.parse(file_path, parser=parser)
-        except (TypeError, AttributeError):
-            # Fall back to standard parsing
-            tree = ET.parse(file_path)
+            # Attempt to parse with proper namespace handling and recovery (for lxml)
+            if USING_LXML:
+                parser = ET.XMLParser(ns_clean=True, recover=True, resolve_entities=False)
+                tree = ET.parse(file_path, parser=parser)
+            else:
+                # Fall back to standard parsing
+                tree = ET.parse(file_path)
+        except Exception as e:
+            logger.error(f"Error parsing XML file {file_path}: {e}")
+            return {}
 
         root = tree.getroot()
         module = get_module_name(file_path)
 
-        # First pass: extract view definitions and models
-        extract_view_definitions(root, registry, module)
+        # Use try/except blocks around each processing step
+        try:
+            # First pass: extract view definitions and models
+            extract_view_definitions(root, registry, module)
+        except Exception as e:
+            logger.error(f"Error extracting view definitions from {file_path}: {e}")
 
-        # Second pass: extract field usage
-        extract_field_usage(root, registry, module, file_path, field_usages)
+        try:
+            # Second pass: extract field usage
+            extract_field_usage(root, registry, module, file_path, field_usages)
+        except Exception as e:
+            logger.error(f"Error extracting field usage from {file_path}: {e}")
 
         # Convert to dictionary format for easier processing
         field_usage_dict = defaultdict(list)
         for usage in field_usages:
-            field_usage_dict[usage.field_key].append(usage.to_dict())
+            try:
+                field_usage_dict[usage.field_key].append(usage.to_dict())
+            except Exception as e:
+                logger.error(f"Error converting field usage to dict: {e}")
 
         return field_usage_dict
+    except RecursionError:
+        logger.error(f"Recursion depth exceeded while parsing XML file {file_path}. Skipping file.")
+        return {}
     except Exception as e:
         logger.error(f"Error parsing XML file {file_path}: {e}")
         return {}
