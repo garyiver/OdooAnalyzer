@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "OdooAnalyzer Config",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "OdooAnalyzer",
+            "args": [
+                "--dir", "C:\\Odoo\\sh\\src",
+                "--output", "OdooAnalyzer\\analysis_results",
+                "--cycle-verbosity", "low",
+                "--analyze-cycles",
+                "--analyze-sharing",
+                "--generate-recommendations",
+                "--analyze-consolidation"
+            ],
+            "cwd": "C:/Odoo/Cursor_Projects",
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

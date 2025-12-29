@@ -51,7 +51,14 @@ class ModuleAnalyzer:
 
                     # Find the field definition for additional info
                     field_def = self.registry.get_field(model, field_name)
-                    defined_module = field_def.module if field_def else "unknown"
+                    if field_def:
+                        root_module = field_def.root_module if field_def.root_module else field_def.module
+                        defined_module = field_def.module
+                        extending_modules = ', '.join(sorted(field_def.extending_modules)) if field_def.extending_modules else ''
+                    else:
+                        root_module = "unknown"
+                        defined_module = "unknown"
+                        extending_modules = ''
 
                     self.shared_fields.append({
                         'field_key': field_key,
@@ -59,11 +66,61 @@ class ModuleAnalyzer:
                         'field_name': field_name,
                         'used_in_modules': ', '.join(modules),
                         'defined_in_module': defined_module,
+                        'root_module': root_module,
+                        'extending_modules': extending_modules,
                         'usage_count': len(usages)
                     })
 
         logger.info(f"Found {len(self.shared_fields)} shared fields across modules")
         return self.shared_fields
+    
+    def analyze_field_dependencies_for_core(self):
+        """
+        Analyze fields to identify root modules and dependencies for consolidation into csl_core.
+        Returns fields grouped by root module with extending modules listed.
+        """
+        logger.info("Analyzing field dependencies for core module consolidation...")
+        
+        # Group fields by root_module
+        fields_by_root = defaultdict(list)
+        
+        # Get all fields from registry
+        for model_name, model_fields in self.registry.fields.items():
+            for field_name, field in model_fields.items():
+                root_module = field.root_module if field.root_module else field.module
+                root_model = field.root_model if field.root_model else model_name
+                
+                fields_by_root[root_module].append({
+                    'field_key': field.field_key,
+                    'root_model': root_model,
+                    'field_name': field.name,
+                    'root_module': root_module,
+                    'defined_in_module': field.module,  # Where this definition exists
+                    'extending_modules': ', '.join(sorted(field.extending_modules)) if field.extending_modules else '',
+                    'is_extension': field.is_extension,
+                    'field_type': field.field_type,
+                    'used_in_modules': ', '.join(sorted(field.used_in_modules)) if field.used_in_modules else '',
+                    'usage_count': len(self.field_usage.get(field.field_key, []))
+                })
+        
+        # Create dependency analysis
+        dependency_analysis = []
+        for root_module, fields in fields_by_root.items():
+            # Collect all modules that extend fields in this root module
+            all_extending_modules = set()
+            for field_info in fields:
+                if field_info['extending_modules']:
+                    all_extending_modules.update(field_info['extending_modules'].split(', '))
+            
+            dependency_analysis.append({
+                'root_module': root_module,
+                'field_count': len(fields),
+                'extending_modules': ', '.join(sorted(all_extending_modules)) if all_extending_modules else '',
+                'fields': fields
+            })
+        
+        logger.info(f"Analyzed {len(dependency_analysis)} root modules with field definitions")
+        return dependency_analysis
 
     def identify_core_candidates(self):
         """Identify fields and models that should be moved to core module"""

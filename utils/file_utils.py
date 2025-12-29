@@ -10,14 +10,42 @@ logger = logging.getLogger(__name__)
 BASE_DIR = ""
 
 def get_module_name(file_path):
-    """Extract the module name from the file path"""
+    r"""Extract module name from file path
+    
+    For paths like:
+    - C:\Odoo\sh\src\user\csl_contacts\models\res_partner.py -> csl_contacts
+    - C:\Odoo\sh\src\odoo\odoo\addons\base\models\res_partner.py -> base
+    
+    The module name is the directory containing __manifest__.py, which is typically
+    the directory before 'models', 'views', 'wizard', etc.
+    """
     parts = Path(file_path).parts
-    # Find the first part after BASE_DIR that doesn't match common subfolders
+    
+    # Look for common Odoo module subdirectories (models, views, wizard, etc.)
+    # The module name is the directory before these
+    module_subdirs = {'models', 'views', 'wizard', 'wizards', 'controllers', 'static', 'data', 'security', 'report', 'tests'}
+    
     for i, part in enumerate(parts):
-        if part == Path(config.BASE_DIR).name:
-            if i + 1 < len(parts):
-                return parts[i + 1]
-    # Fallback if we can't determine module
+        if part in module_subdirs and i > 0:
+            # Module name is the directory before the subdirectory
+            return parts[i - 1]
+    
+    # Fallback: if BASE_DIR is set, find first part after it
+    if config.BASE_DIR:
+        base_dir_name = Path(config.BASE_DIR).name
+        for i, part in enumerate(parts):
+            if part == base_dir_name and i + 1 < len(parts):
+                # Skip intermediate directories like 'odoo', 'user', 'enterprise'
+                # and find the actual module directory
+                for j in range(i + 1, len(parts)):
+                    potential_module = parts[j]
+                    # Skip common intermediate directories
+                    if potential_module not in {'odoo', 'addons', 'user', 'enterprise', 'custom'}:
+                        return potential_module
+                # If we only have intermediate dirs, return the first one
+                return parts[i + 1] if i + 1 < len(parts) else "unknown"
+    
+    # Last fallback
     return "unknown"
 
 def get_files(base_dir, extension):

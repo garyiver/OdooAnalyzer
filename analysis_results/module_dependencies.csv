@@ -1,4 +1,0 @@
-module,name,category,version,manifest_dependencies,inheritance_dependencies,combined_dependencies,dependents
-odoo,test-uninstall,Hidden/Tests,0.1,base,enterprise,base; enterprise,enterprise; user
-enterprise,Studio,Customizations/Studio,1.0,base_automation; base_import_module; mail; web; web_enterprise; web_editor; web_map; web_gantt; sms,odoo,base_automation; base_import_module; mail; odoo; sms; web; web_editor; web_enterprise; web_gantt; web_map,odoo; user
-user,CSL sh All in one purchase tools extend,CSL Apps,14.0.0.0.1,sh_all_in_one_purchase_tools,enterprise; odoo,enterprise; odoo; sh_all_in_one_purchase_tools,

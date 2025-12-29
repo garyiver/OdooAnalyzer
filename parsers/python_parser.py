@@ -42,11 +42,15 @@ class ModelVisitor(ast.NodeVisitor):
                         # Find _inherit attribute
                         elif target.id == '_inherit':
                             if isinstance(stmt.value, ast.Constant):
-                                inherits.append(stmt.value.s)
+                                inherit_val = stmt.value.s
+                                if inherit_val:  # Filter out None, empty strings, etc.
+                                    inherits.append(inherit_val)
                             elif isinstance(stmt.value, ast.List):
                                 for elt in stmt.value.elts:
                                     if isinstance(elt, ast.Constant):
-                                        inherits.append(elt.s)
+                                        elt_val = elt.s
+                                        if elt_val:  # Filter out None, empty strings, etc.
+                                            inherits.append(elt_val)
 
         if model_name or inherits:
             # Register the model if it has a name
@@ -55,15 +59,19 @@ class ModelVisitor(ast.NodeVisitor):
 
                 # Register _name to _inherit relationships (inheritance)
                 for inherited in inherits:
-                    self.registry.register_inherit(model_name, inherited)
+                    if inherited:  # Filter out None values
+                        self.registry.register_inherit(model_name, inherited)
 
             # If no _name but has _inherit with a single model, this is a class extension
             elif len(inherits) == 1:
                 inherited_model = inherits[0]
                 # Register class to model mapping for field discovery
-                self.registry.class_to_model[node.name] = inherited_model
+                if inherited_model:
+                    self.registry.class_to_model[node.name] = inherited_model
 
-                # No need to register inheritance since there's no unique model name
+                    # Register that this module extends the inherited_model
+                    # For extension-only classes, we track module-to-model extensions separately
+                    self.registry.register_module_extension(self.module, inherited_model, inherited_model)
 
             # For multiple inheritance without _name, this is more complex
             # We'll register the class name as a temporary model
@@ -74,7 +82,8 @@ class ModelVisitor(ast.NodeVisitor):
 
                 # Register inheritance for each inherited model
                 for inherited in inherits:
-                    self.registry.register_inherit(temp_model, inherited)
+                    if inherited:  # Filter out None values
+                        self.registry.register_inherit(temp_model, inherited)
 
                 # Map the class to the first inherited model for field discovery
                 self.registry.class_to_model[node.name] = inherits[0]
@@ -93,8 +102,10 @@ class FieldVisitor(ast.NodeVisitor):
         self.registry = registry
         self.current_class = None
         self.current_model = None
+        self.is_extension_class = False  # True if class only extends (no _name)
         self.fields = []
         self.method_overrides = []
+        self.all_methods = []  # Track all methods, not just overrides
         self.compute_methods = {}  # name: method_node
 
     def visit_ClassDef(self, node):
@@ -106,32 +117,45 @@ class FieldVisitor(ast.NodeVisitor):
 
         # Determine the model for this class
         model_name = None
+        is_extension_only = False  # True if class only has _inherit, no _name
 
         # First, check if this class is mapped to a model in our registry
         if node.name in self.registry.class_to_model:
             model_name = self.registry.class_to_model[node.name]
+            # If mapped via class_to_model, it's likely an extension (only _inherit, no _name)
+            is_extension_only = True
 
         # If not, look for _name or _inherit in the class body
         if not model_name:
+            has_name = False
+            has_inherit = False
             for stmt in node.body:
                 if isinstance(stmt, ast.Assign):
                     for target in stmt.targets:
                         if isinstance(target, ast.Name):
                             if target.id == '_name' and isinstance(stmt.value, ast.Constant):
                                 model_name = stmt.value.s
+                                has_name = True
                                 break
-                            elif target.id == '_inherit' and not model_name:
-                                if isinstance(stmt.value, ast.Constant):
-                                    model_name = stmt.value.s
-                                    break
-                                elif isinstance(stmt.value, ast.List) and stmt.value.elts:
-                                    # Use the first inherited model as the main model
-                                    first_elt = stmt.value.elts[0]
-                                    if isinstance(first_elt, ast.Constant):
-                                        model_name = first_elt.s
+                            elif target.id == '_inherit':
+                                has_inherit = True
+                                if not model_name:
+                                    if isinstance(stmt.value, ast.Constant):
+                                        model_name = stmt.value.s
                                         break
+                                    elif isinstance(stmt.value, ast.List) and stmt.value.elts:
+                                        # Use the first inherited model as the main model
+                                        first_elt = stmt.value.elts[0]
+                                        if isinstance(first_elt, ast.Constant):
+                                            model_name = first_elt.s
+                                            break
+            
+            # If we have _inherit but no _name, this is an extension-only class
+            if has_inherit and not has_name:
+                is_extension_only = True
 
         self.current_model = model_name
+        self.is_extension_class = is_extension_only  # Store for field processing
 
         if self.current_model:
             # Process field definitions in this model
@@ -139,6 +163,7 @@ class FieldVisitor(ast.NodeVisitor):
                 if isinstance(stmt, ast.Assign):
                     self._process_field_assignment(stmt)
                 elif isinstance(stmt, ast.FunctionDef):
+                    self._track_all_methods(stmt)
                     self._check_for_method_override(stmt)
                     self._process_compute_method(stmt)
 
@@ -147,6 +172,7 @@ class FieldVisitor(ast.NodeVisitor):
 
         self.current_class = old_class
         self.current_model = old_model
+        self.is_extension_class = False  # Reset when leaving class
 
     def _process_field_assignment(self, stmt):
         """Process field assignments in Odoo models"""
@@ -186,40 +212,73 @@ class FieldVisitor(ast.NodeVisitor):
                             self.file_path
                         )
 
-                        # Check if this field extends a core field
-                        if self.current_model in self.registry.inherits:
+                        # Check if this field extends a parent field
+                        # This happens when:
+                        # 1. The class only has _inherit (no _name) - it's extending the model
+                        # 2. OR the model inherits from another model and the field exists in parent
+                        
+                        parent_field = None
+                        parent_model = None
+                        
+                        # First, check if this is an extension-only class (only _inherit, no _name)
+                        # In this case, the current_model IS the inherited model, so check if field exists there
+                        if self.is_extension_class and self.current_model:
+                            # Check if field already exists in this model (from parent module)
+                            existing_field = self.registry.get_field(self.current_model, field_name)
+                            if existing_field:
+                                parent_field = existing_field
+                                parent_model = self.current_model
+                        
+                        # Also check inheritance chain for parent fields
+                        if not parent_field and self.current_model in self.registry.inherits:
                             # Get all models in the inheritance chain
                             inherited_models = self.registry.get_model_inheritance_chain(self.current_model)
-                            inherited_models.append(self.current_model)  # Include self for completeness
-
+                            
                             # Check if the field is defined in any parent model
-                            for parent_model in inherited_models:
-                                if parent_model == self.current_model:
+                            for inherited_model in inherited_models:
+                                if inherited_model == self.current_model:
                                     continue  # Skip self
-
-                                parent_field = self.registry.get_field(parent_model, field_name)
-                                if parent_field:
-                                    # This is an extension of an existing field
-                                    field.mark_as_extension(parent_field.file_path)
-
-                                    # Track which attributes were added or modified
-                                    field.original_attributes = parent_field.attributes.copy()
-                                    field.added_attributes = {}
-                                    field.modified_attributes = {}
-
-                                    # Compare attributes to determine which were added or modified
-                                    for attr_name, attr_value in attributes.items():
-                                        if attr_name not in parent_field.attributes:
-                                            # This is a new attribute
-                                            field.added_attributes[attr_name] = attr_value
-                                        elif attr_value != parent_field.attributes[attr_name]:
-                                            # This attribute was modified
-                                            field.modified_attributes[attr_name] = {
-                                                'old': parent_field.attributes[attr_name],
-                                                'new': attr_value
-                                            }
-
+                                
+                                existing_field = self.registry.get_field(inherited_model, field_name)
+                                if existing_field:
+                                    parent_field = existing_field
+                                    parent_model = inherited_model
                                     break
+                        
+                        # If we found a parent field, mark this as an extension
+                        if parent_field and parent_model:
+                            # This is an extension of an existing field
+                            field.mark_as_extension(parent_field.file_path)
+                            
+                            # Track which attributes were added, modified, or removed
+                            field.original_attributes = parent_field.attributes.copy()
+                            field.added_attributes = {}
+                            field.modified_attributes = {}
+                            field.removed_attributes = {}
+                            
+                            # Compare attributes to determine which were added or modified
+                            for attr_name, attr_value in attributes.items():
+                                if attr_name not in parent_field.attributes:
+                                    # This is a new attribute
+                                    field.added_attributes[attr_name] = attr_value
+                                elif attr_value != parent_field.attributes[attr_name]:
+                                    # This attribute was modified
+                                    field.modified_attributes[attr_name] = {
+                                        'old': parent_field.attributes[attr_name],
+                                        'new': attr_value
+                                    }
+                            
+                            # Check for removed attributes (in original but not in extension)
+                            for attr_name, attr_value in parent_field.attributes.items():
+                                if attr_name not in attributes:
+                                    # This attribute was removed in the extension
+                                    field.removed_attributes[attr_name] = attr_value
+                            
+                            # Set root owner immediately if we found the parent
+                            parent_module = self.registry._get_model_module(parent_model)
+                            if not parent_module or parent_module == 'unknown':
+                                parent_module = parent_field.module
+                            field.set_root_owner(parent_model, parent_module)
 
                         # Process compute methods
                         if 'compute' in attributes:
@@ -233,6 +292,21 @@ class FieldVisitor(ast.NodeVisitor):
                         self.registry.register_field(self.current_model, field)
                         self.fields.append(field)
 
+    def _track_all_methods(self, node):
+        """Track all methods defined in the model"""
+        # Skip private methods (starting with __) unless they're special methods
+        if node.name.startswith('_') and not node.name.startswith('__'):
+            return
+        
+        self.all_methods.append({
+            'class': self.current_class,
+            'model': self.current_model,
+            'method': node.name,
+            'file_path': self.file_path,
+            'module': self.module,
+            'is_override': False  # Will be set to True if it's also in method_overrides
+        })
+    
     def _check_for_method_override(self, node):
         """Identify method overrides by checking for super() calls"""
         has_super_call = False
@@ -245,13 +319,22 @@ class FieldVisitor(ast.NodeVisitor):
                         break
 
         if has_super_call:
-            self.method_overrides.append({
+            override_info = {
                 'class': self.current_class,
                 'model': self.current_model,
                 'method': node.name,
                 'file_path': self.file_path,
                 'module': self.module
-            })
+            }
+            self.method_overrides.append(override_info)
+            
+            # Mark the method as an override in all_methods
+            for method in self.all_methods:
+                if (method['model'] == self.current_model and 
+                    method['method'] == node.name and 
+                    method['file_path'] == self.file_path):
+                    method['is_override'] = True
+                    break
 
     def _process_compute_method(self, node):
         """Store compute methods for later analysis"""
@@ -307,20 +390,27 @@ def parse_python_file(file_path, registry):
         field_visitor = FieldVisitor(file_path, registry)
         field_visitor.visit(tree)
 
-        return field_visitor.fields, field_visitor.method_overrides
+        return field_visitor.fields, field_visitor.method_overrides, field_visitor.all_methods
     except Exception as e:
         logger.error(f"Error parsing Python file {file_path}: {e}")
-        return [], []
+        return [], [], []
 
 
 def parse_python_files(base_dir, registry):
-    """Parse all Python files in the directory"""
+    """Parse all Python files in the directory or list of files"""
     all_fields = []
     all_method_overrides = []
+    all_methods = []
+
+    # Handle both directory paths and lists of file paths
+    if isinstance(base_dir, list):
+        file_list = base_dir
+    else:
+        file_list = list(get_files(base_dir, '.py'))
 
     # First pass: Extract model definitions and inheritance
     logger.info("Extracting model definitions and inheritance...")
-    for file_path in get_files(base_dir, '.py'):
+    for file_path in file_list:
         if file_path.endswith('__manifest__.py'):
             continue
 
@@ -337,12 +427,13 @@ def parse_python_files(base_dir, registry):
 
     # Second pass: Extract field definitions and methods
     logger.info("Extracting field definitions and methods...")
-    for file_path in get_files(base_dir, '.py'):
+    for file_path in file_list:
         if file_path.endswith('__manifest__.py'):
             continue
 
-        fields, method_overrides = parse_python_file(file_path, registry)
+        fields, method_overrides, methods = parse_python_file(file_path, registry)
         all_fields.extend(fields)
         all_method_overrides.extend(method_overrides)
+        all_methods.extend(methods)
 
-    return all_fields, all_method_overrides
+    return all_fields, all_method_overrides, all_methods

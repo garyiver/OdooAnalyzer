@@ -1,2 +1,0 @@
-field,field_key,model,current_module,used_in_modules,recommendation
-name,sale.order.name,sale.order,odoo,odoo; user,Move to core module
