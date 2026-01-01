@@ -10,12 +10,31 @@
                 "--dir", "C:\\Odoo\\sh\\src",
                 "--output", "OdooAnalyzer\\analysis_results",
                 "--cycle-verbosity", "low",
-                "--analyze-cycles",
                 "--analyze-sharing",
                 "--generate-recommendations",
                 "--analyze-consolidation"
             ],
-            "cwd": "C:/Odoo/Cursor_Projects",
+            "cwd": "C:/Cursor",
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Verify",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/__main__.py",
+            "args": [
+                "--dir", "C:\\Odoo\\sh\\src",
+                "--output", "${workspaceFolder}\\analysis_results\\migration",
+                "--analyze-migration",
+                "--original-dir", "C:\\Odoo\\sh\\src\\user",
+                "--new-dir", "C:\\Cursor\\Odoo\\csl_addons\\odoo"
+            ],
+            "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONUNBUFFERED": "1",
                 "PYTHONPATH": "${workspaceFolder}"

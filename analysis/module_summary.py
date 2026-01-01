@@ -20,15 +20,49 @@ def generate_module_summary(output_dir, registry, all_fields, all_methods, eligi
         all_methods: List of all method dictionaries
         eligible_modules: Set of eligible module names
     """
+    logger.info("=" * 60)
+    logger.info("MODULE SUMMARY GENERATOR - Starting")
+    logger.info(f"Output directory: {output_dir}")
+    logger.info(f"Eligible modules type: {type(eligible_modules)}")
+    logger.info(f"Eligible modules value: {eligible_modules}")
+    logger.info(f"All fields type: {type(all_fields)}, length: {len(all_fields) if all_fields else 'N/A'}")
+    logger.info(f"All methods type: {type(all_methods)}, length: {len(all_methods) if all_methods else 'N/A'}")
+    logger.info("=" * 60)
+    
     if not eligible_modules:
         logger.warning("No eligible modules specified - skipping module summary generation")
         return
     
+    # Ensure all_methods is a list (handle None case)
+    if all_methods is None:
+        logger.warning("all_methods is None - using empty list")
+        all_methods = []
+    
+    # Ensure all_fields is a list (handle None case)
+    if all_fields is None:
+        logger.warning("all_fields is None - using empty list")
+        all_fields = []
+    
     logger.info(f"Generating module summary for {len(eligible_modules)} eligible modules...")
+    logger.info(f"Eligible modules: {sorted(eligible_modules)}")
+    logger.info(f"Total fields available: {len(all_fields)}, Total methods available: {len(all_methods)}")
+    
+    # Debug: Show unique modules in the data
+    if all_fields:
+        unique_field_modules = set(f.get('module', 'unknown') for f in all_fields)
+        unique_root_modules = set(f.get('root_module', '') for f in all_fields if f.get('root_module'))
+        logger.debug(f"Unique field modules in data: {sorted(unique_field_modules)}")
+        logger.debug(f"Unique root modules in data: {sorted(unique_root_modules)}")
+    
+    if all_methods:
+        unique_method_modules = set(m.get('module', 'unknown') for m in all_methods)
+        logger.debug(f"Unique method modules in data: {sorted(unique_method_modules)}")
     
     # Filter fields and methods for eligible modules
     eligible_fields = [f for f in all_fields if f.get('module') in eligible_modules or f.get('root_module') in eligible_modules]
     eligible_methods = [m for m in all_methods if m.get('module') in eligible_modules]
+    
+    logger.info(f"Found {len(eligible_fields)} eligible fields and {len(eligible_methods)} eligible methods")
     
     # Group by module
     module_data = defaultdict(lambda: {
@@ -70,12 +104,16 @@ def generate_module_summary(output_dir, registry, all_fields, all_methods, eligi
     # Create summary data
     summary_data = []
     
+    if not summary_data and eligible_modules:
+        # At minimum, create headers for each eligible module
+        logger.info("Creating summary entries for all eligible modules...")
+    
     for module in sorted(eligible_modules):
         data = module_data[module]
         fields = data['fields']
         methods = data['methods']
         
-        # Add module header row
+        # Add module header row (always add, even if no fields/methods)
         summary_data.append({
             'module': module,
             'type': 'MODULE_HEADER',
@@ -166,13 +204,40 @@ def generate_module_summary(output_dir, registry, all_fields, all_methods, eligi
     output_file = os.path.join(output_dir, 'module_summary.csv')
     fieldnames = ['module', 'type', 'name', 'model', 'file_path', 'details']
     
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+    
     try:
+        logger.info(f"Writing module summary to {output_file} ({len(summary_data)} rows)...")
         with open(output_file, 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            for row in summary_data:
-                writer.writerow(row)
-        logger.info(f"Module summary written to {output_file}")
+            if summary_data:
+                for row in summary_data:
+                    writer.writerow(row)
+            else:
+                # Write a message if no data found
+                logger.warning("No summary data generated - creating empty file with header only")
+                # Still write a placeholder row so the file isn't completely empty
+                writer.writerow({
+                    'module': 'NONE',
+                    'type': 'INFO',
+                    'name': 'No data found',
+                    'model': '',
+                    'file_path': '',
+                    'details': 'No fields or methods found for eligible modules'
+                })
+        
+        # Verify file was created
+        if os.path.exists(output_file):
+            file_size = os.path.getsize(output_file)
+            logger.info(f"Module summary successfully written to {output_file} ({file_size} bytes)")
+        else:
+            logger.error(f"File was not created: {output_file}")
+            raise FileNotFoundError(f"Output file was not created: {output_file}")
     except Exception as e:
         logger.error(f"Error writing module summary to {output_file}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise
 

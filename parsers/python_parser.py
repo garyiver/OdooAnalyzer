@@ -294,10 +294,14 @@ class FieldVisitor(ast.NodeVisitor):
 
     def _track_all_methods(self, node):
         """Track all methods defined in the model"""
-        # Skip private methods (starting with __) unless they're special methods
-        if node.name.startswith('_') and not node.name.startswith('__'):
+        # In Odoo, methods starting with _ are common and important (e.g., _onchange_*, _compute_*, etc.)
+        # Only skip name-mangled private methods (starting with __ but not ending with __)
+        # Include: public methods, _methods (Odoo convention), and special methods (__init__, etc.)
+        if node.name.startswith('__') and not node.name.endswith('__'):
+            # This is a name-mangled private method (e.g., __private_method) - skip it
             return
         
+        # Track all other methods: public, _methods (Odoo), and special methods (__init__, etc.)
         self.all_methods.append({
             'class': self.current_class,
             'model': self.current_model,

@@ -24,6 +24,7 @@ from analysis.module_analyzer import ModuleAnalyzer
 from analysis.recommendations import generate_restructuring_recommendations
 from analysis.module_consolidation import analyze_module_consolidation
 from analysis.module_summary import generate_module_summary
+from analysis.migration_analysis import analyze_migration
 from utils.file_utils import get_safe_files, get_custom_modules
 from utils.cycle_management import CycleManager
 
@@ -65,6 +66,14 @@ def parse_args():
                         help='Control verbosity of inheritance cycle detection logs')
     parser.add_argument('--analyze-cycles', action='store_true',
                         help='Perform a dedicated analysis of inheritance cycles')
+    
+    # Migration analysis options
+    parser.add_argument('--analyze-migration', action='store_true',
+                        help='Analyze migration differences between original and new codebases')
+    parser.add_argument('--original-dir', type=str, default=r'C:\Odoo\sh\src\user',
+                        help='Path to original codebase (default: C:\\Odoo\\sh\\src\\user)')
+    parser.add_argument('--new-dir', type=str, default=r'C:\Cursor\Odoo\csl_addons\odoo',
+                        help='Path to new codebase (default: C:\\Cursor\\Odoo\\csl_addons\\odoo)')
 
     return parser.parse_args()
 
@@ -561,6 +570,32 @@ def main():
                 logger.info("Module consolidation analysis completed successfully")
             except Exception as e:
                 logger.error(f"Error analyzing module consolidation: {e}")
+                logger.error(traceback.format_exc())
+        
+        # Perform migration analysis if requested
+        if args.analyze_migration:
+            try:
+                logger.info("=" * 80)
+                logger.info("PERFORMING MIGRATION ANALYSIS")
+                logger.info("=" * 80)
+                # Use command-line eligible modules if provided, otherwise use config
+                eligible_modules = args.eligible_modules
+                if not eligible_modules:
+                    eligible_modules = config.ELIGIBLE_MODULES_FOR_CORE if config.ELIGIBLE_MODULES_FOR_CORE else []
+                
+                if eligible_modules:
+                    logger.info(f"Using eligible modules: {eligible_modules}")
+                    analyze_migration(
+                        args.original_dir,
+                        args.new_dir,
+                        output_dir,
+                        eligible_modules
+                    )
+                    logger.info("Migration analysis completed successfully")
+                else:
+                    logger.warning("No eligible modules specified - skipping migration analysis")
+            except Exception as e:
+                logger.error(f"Error performing migration analysis: {e}")
                 logger.error(traceback.format_exc())
 
         # Report execution time
