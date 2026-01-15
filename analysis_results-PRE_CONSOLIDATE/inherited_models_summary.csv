@@ -1,0 +1,78 @@
+inherited_model,modules_inheriting,module_count,is_shared,sharing_details
+account.analytic.account,csl_project_repair,1,No,Inherited only by csl_project_repair
+account.analytic.line,"csl_project_repair, csl_timesheet, project_repair_workflow",3,Yes,"Shared by 3 modules: csl_project_repair, csl_timesheet, project_repair_workflow"
+account.batch.payment,csl_account,1,No,Inherited only by csl_account
+account.fiscal.position,csl_account,1,No,Inherited only by csl_account
+account.move,"csl_account, csl_invoice, csl_purchase, sale_disable_auto_followers",4,Yes,"Shared by 4 modules: csl_account, csl_invoice, csl_purchase, sale_disable_auto_followers"
+account.move.line,"csl_account, csl_custom, csl_invoice",3,Yes,"Shared by 3 modules: csl_account, csl_custom, csl_invoice"
+account.move.reversal,csl_account,1,No,Inherited only by csl_account
+account.payment,csl_account,1,No,Inherited only by csl_account
+account.payment.register,"csl_account, csl_purchase",2,Yes,"Shared by 2 modules: csl_account, csl_purchase"
+account.payment.term,csl_account,1,No,Inherited only by csl_account
+base,project_repair_workflow,1,No,Inherited only by project_repair_workflow
+base.wizard,csl_rma,1,No,Inherited only by csl_rma
+blog.post,csl_website,1,No,Inherited only by csl_website
+hr.attendance.break,csl_attendance,1,No,Inherited only by csl_attendance
+hr.department,csl_timesheet,1,No,Inherited only by csl_timesheet
+hr.employee,csl_timesheet,1,No,Inherited only by csl_timesheet
+hr.employee.base,csl_attendance,1,No,Inherited only by csl_attendance
+hr.employee.public,csl_timesheet,1,No,Inherited only by csl_timesheet
+image.mixin,csl_product,1,No,Inherited only by csl_product
+ir.attachment,"csl_compress_product_image, csl_product",2,Yes,"Shared by 2 modules: csl_compress_product_image, csl_product"
+ir.http,csl_website,1,No,Inherited only by csl_website
+ir.model.fields,project_repair_workflow_trigger,1,No,Inherited only by project_repair_workflow_trigger
+mail.activity,csl_rma,1,No,Inherited only by csl_rma
+mail.activity.mixin,"csl_competitor, csl_product, csl_rma, csl_website",4,Yes,"Shared by 4 modules: csl_competitor, csl_product, csl_rma, csl_website"
+mail.activity.type,csl_rma,1,No,Inherited only by csl_rma
+mail.compose.message,csl_project_repair,1,No,Inherited only by csl_project_repair
+mail.thread,"csl_attendance, csl_competitor, csl_product, csl_rma, csl_website, sale_disable_auto_followers",6,Yes,"Shared by 6 modules: csl_attendance, csl_competitor, csl_product, csl_rma, csl_website, sale_disable_auto_followers"
+payment.acquirer,csl_account,1,No,Inherited only by csl_account
+payment.transaction,"csl_account, csl_website",2,Yes,"Shared by 2 modules: csl_account, csl_website"
+portal.mixin,csl_website,1,No,Inherited only by csl_website
+portal.wizard,csl_login,1,No,Inherited only by csl_login
+portal.wizard.user,csl_login,1,No,Inherited only by csl_login
+product.attribute,csl_product,1,No,Inherited only by csl_product
+product.attribute.value,csl_product,1,No,Inherited only by csl_product
+product.basecode,csl_project_repair,1,No,Inherited only by csl_project_repair
+product.category,csl_product,1,No,Inherited only by csl_product
+product.manufacturer,csl_project_repair,1,No,Inherited only by csl_project_repair
+product.product,"csl_compress_product_image, csl_photos, csl_product, csl_project_repair, csl_website",5,Yes,"Shared by 5 modules: csl_compress_product_image, csl_photos, csl_product, csl_project_repair, csl_website"
+product.series,csl_project_repair,1,No,Inherited only by csl_project_repair
+product.techcode,csl_project_repair,1,No,Inherited only by csl_project_repair
+product.template,"csl_competitor, csl_compress_product_image, csl_photos, csl_product, csl_project_repair, csl_website",6,Yes,"Shared by 6 modules: csl_competitor, csl_compress_product_image, csl_photos, csl_product, csl_project_repair, csl_website"
+product.template.attribute.value,csl_website,1,No,Inherited only by csl_website
+project.project,"csl_rma, csl_timesheet",2,Yes,"Shared by 2 modules: csl_rma, csl_timesheet"
+project.task,"csl_photos, csl_project_repair, csl_project_repair_assignee_log, csl_rma, csl_timesheet, project_repair_workflow",6,Yes,"Shared by 6 modules: csl_photos, csl_project_repair, csl_project_repair_assignee_log, csl_rma, csl_timesheet, project_repair_workflow"
+project.task.accessories.product,csl_photos,1,No,Inherited only by csl_photos
+project.task.create.timesheet,csl_project_repair,1,No,Inherited only by csl_project_repair
+project.task.product,"csl_custom, csl_photos",2,Yes,"Shared by 2 modules: csl_custom, csl_photos"
+project.task.type,"csl_rma, project_repair_workflow",2,Yes,"Shared by 2 modules: csl_rma, project_repair_workflow"
+purchase.order,"csl_account, csl_purchase",2,Yes,"Shared by 2 modules: csl_account, csl_purchase"
+purchase.order.line,"csl_account, csl_purchase",2,Yes,"Shared by 2 modules: csl_account, csl_purchase"
+res.company,"csl_attendance, csl_contacts, csl_invoice, csl_product, csl_purchase, csl_rma, csl_website",7,Yes,"Shared by 7 modules: csl_attendance, csl_contacts, csl_invoice, csl_product, csl_purchase, csl_rma, csl_website"
+res.config.settings,"csl_compress_product_image, csl_product, csl_project_repair, csl_rma, sale_disable_auto_followers",5,Yes,"Shared by 5 modules: csl_compress_product_image, csl_product, csl_project_repair, csl_rma, sale_disable_auto_followers"
+res.country.state,csl_account,1,No,Inherited only by csl_account
+res.partner,"csl_account, csl_contacts, csl_login, csl_purchase, csl_rma, csl_website",6,Yes,"Shared by 6 modules: csl_account, csl_contacts, csl_login, csl_purchase, csl_rma, csl_website"
+res.partner.industry,csl_contacts,1,No,Inherited only by csl_contacts
+res.users,"csl_login, csl_product",2,Yes,"Shared by 2 modules: csl_login, csl_product"
+rma.expected_delivery,"csl_photos, csl_rma",2,Yes,"Shared by 2 modules: csl_photos, csl_rma"
+rma.product_line,csl_photos,1,No,Inherited only by csl_photos
+sale.advance.payment.inv,"csl_project_repair, sale_disable_auto_followers",2,Yes,"Shared by 2 modules: csl_project_repair, sale_disable_auto_followers"
+sale.order,"csl_project_repair, csl_rma, csl_sale, csl_website, sale_disable_auto_followers",5,Yes,"Shared by 5 modules: csl_project_repair, csl_rma, csl_sale, csl_website, sale_disable_auto_followers"
+sale.order.line,"csl_custom, csl_project_repair, csl_rma, csl_sale",4,Yes,"Shared by 4 modules: csl_custom, csl_project_repair, csl_rma, csl_sale"
+sale.report,csl_rma,1,No,Inherited only by csl_rma
+stock.inventory.line,csl_project_repair,1,No,Inherited only by csl_project_repair
+stock.move,"csl_custom, csl_rma, csl_sale",3,Yes,"Shared by 3 modules: csl_custom, csl_rma, csl_sale"
+stock.move.line,"csl_custom, csl_photos, csl_project_repair, csl_rma, csl_sale",5,Yes,"Shared by 5 modules: csl_custom, csl_photos, csl_project_repair, csl_rma, csl_sale"
+stock.picking,"csl_account, csl_photos, csl_project_repair, csl_rma, sale_disable_auto_followers",5,Yes,"Shared by 5 modules: csl_account, csl_photos, csl_project_repair, csl_rma, sale_disable_auto_followers"
+stock.picking.type,"csl_project_repair, csl_rma",2,Yes,"Shared by 2 modules: csl_project_repair, csl_rma"
+stock.production.lot,"bista_convert_product, csl_photos, csl_project_repair, csl_rma",4,Yes,"Shared by 4 modules: bista_convert_product, csl_photos, csl_project_repair, csl_rma"
+stock.quant,"csl_product, csl_rma",2,Yes,"Shared by 2 modules: csl_product, csl_rma"
+stock.return.picking,csl_rma,1,No,Inherited only by csl_rma
+stock.rule,"csl_custom, csl_project_repair",2,Yes,"Shared by 2 modules: csl_custom, csl_project_repair"
+stock.warehouse,csl_project_repair,1,No,Inherited only by csl_project_repair
+tmp.cttq.product,csl_custom,1,No,Inherited only by csl_custom
+website,csl_website,1,No,Inherited only by csl_website
+website.multi.mixin,csl_product,1,No,Inherited only by csl_product
+website.published.mixin,csl_product,1,No,Inherited only by csl_product
+website.seo.metadata,csl_product,1,No,Inherited only by csl_product

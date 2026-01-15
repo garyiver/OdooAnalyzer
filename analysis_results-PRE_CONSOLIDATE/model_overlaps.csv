@@ -1,0 +1,37 @@
+model,modules,module_count,severity
+res.company,"csl_attendance, csl_contacts, csl_invoice, csl_product, csl_purchase, csl_rma, csl_website",7,high
+res.partner,"csl_account, csl_contacts, csl_login, csl_purchase, csl_rma, csl_website",6,high
+product.template,"csl_competitor, csl_compress_product_image, csl_photos, csl_product, csl_project_repair",5,high
+project.task,"csl_photos, csl_project_repair, csl_project_repair_assignee_log, csl_timesheet, project_repair_workflow",5,high
+res.config.settings,"csl_compress_product_image, csl_product, csl_project_repair, csl_rma, sale_disable_auto_followers",5,high
+sale.order,"csl_project_repair, csl_rma, csl_sale, csl_website, sale_disable_auto_followers",5,high
+sale.order.line,"csl_custom, csl_project_repair, csl_rma, csl_sale",4,high
+stock.move.line,"csl_custom, csl_photos, csl_rma, csl_sale",4,high
+stock.picking,"csl_photos, csl_project_repair, csl_rma, sale_disable_auto_followers",4,high
+account.analytic.line,"csl_project_repair, csl_timesheet, project_repair_workflow",3,high
+account.move,"csl_account, csl_purchase, sale_disable_auto_followers",3,high
+account.move.line,"csl_account, csl_custom, csl_invoice",3,high
+project.task.product,"csl_custom, csl_photos, csl_project_repair",3,high
+purchase.order,"csl_account, csl_project_repair, csl_purchase",3,high
+purchase.order.line,"csl_account, csl_project_repair, csl_purchase",3,high
+rma.expected_delivery,"csl_photos, csl_rma, csl_website",3,high
+stock.move,"csl_custom, csl_rma, csl_sale",3,high
+stock.production.lot,"csl_photos, csl_project_repair, csl_rma",3,high
+account.payment.register,"csl_account, csl_purchase",2,medium
+payment.transaction,"csl_account, csl_website",2,medium
+product.basecode,"csl_product, csl_project_repair",2,medium
+product.manufacturer,"csl_product, csl_project_repair",2,medium
+product.product,"csl_product, csl_project_repair",2,medium
+product.series,"csl_product, csl_project_repair",2,medium
+product.techcode,"csl_product, csl_project_repair",2,medium
+product.template.attribute.value,"csl_product, csl_website",2,medium
+project.project,"csl_rma, csl_timesheet",2,medium
+project.repair.task.workflow.trigger,"project_repair_workflow, project_repair_workflow_trigger",2,medium
+project.task.accessories.product,"csl_photos, csl_project_repair",2,medium
+project.task.type,"csl_rma, project_repair_workflow",2,medium
+res.users,"csl_login, csl_product",2,medium
+rma.product_line,"csl_photos, csl_rma",2,medium
+sale.advance.payment.inv,"csl_project_repair, sale_disable_auto_followers",2,medium
+stock.picking.type,"csl_project_repair, csl_rma",2,medium
+stock.rule,"csl_custom, csl_project_repair",2,medium
+tmp.cttq.product,"csl_custom, csl_project_repair",2,medium

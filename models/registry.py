@@ -107,60 +107,22 @@ class ModelRegistry:
             return self.fields[model_name][field_name]
         return []
 
-    def get_model_inheritance_chain(self, model_name, visited=None, path=None):
+    def get_model_inheritance_chain(self, model_name, visited=None):
         """
-        Get all models in the inheritance chain for a model with detailed cycle detection
+        Get all models in the inheritance chain for a model
 
         Args:
             model_name: Model to get inheritance chain for
-            visited: Set of already visited models (for cycle detection)
-            path: List tracking the inheritance path for detailed logging
+            visited: Set of already visited models (to prevent infinite loops)
 
         Returns:
             List of models in inheritance chain
         """
         if visited is None:
             visited = set()
-        if path is None:
-            path = []
-
-        # Create a copy of the current path and add this model
-        current_path = path + [model_name]
 
         if model_name in visited:
-            # We've hit a cycle, record it (but don't log every time)
-            cycle_start_index = current_path.index(model_name)
-            cycle_path = current_path[cycle_start_index:] + [model_name]
-            
-            # Use CycleManager if available to avoid duplicate logging
-            if hasattr(self, 'cycle_manager') and self.cycle_manager:
-                # Pass module mapping function to include module information in cycles
-                self.cycle_manager.record_cycle(
-                    cycle_path, 
-                    module_map=self._get_model_module,
-                    context=f"model: {model_name}"
-                )
-            else:
-                # Fallback: only log if verbosity allows
-                cycle_description = " -> ".join(cycle_path)
-                # Only log first occurrence to avoid spam
-                if not hasattr(self, '_logged_cycles'):
-                    self._logged_cycles = set()
-                cycle_key = tuple(cycle_path)
-                if cycle_key not in self._logged_cycles:
-                    self._logged_cycles.add(cycle_key)
-                    logger.warning(f"Detected inheritance cycle: {cycle_description}")
-                    
-                    # Show what modules define each model in the cycle
-                    modules_info = []
-                    for m in cycle_path:
-                        if m in self.models:
-                            module = self.models[m].get('module', 'unknown')
-                            modules_info.append(f"{m} (defined in {module})")
-                        else:
-                            modules_info.append(f"{m} (not found in registry)")
-                    logger.warning(f"Cycle module details: {', '.join(modules_info)}")
-            
+            # Prevent infinite loops
             return []
 
         visited.add(model_name)
@@ -171,74 +133,11 @@ class ModelRegistry:
         chain = []
         for inherited in self.inherits[model_name]:
             chain.append(inherited)
-            # Pass the visited set and updated path to detect cycles
-            chain.extend(self.get_model_inheritance_chain(inherited, visited, current_path))
+            chain.extend(self.get_model_inheritance_chain(inherited, visited))
 
         # Remove duplicates while preserving order
         seen = set()
         return [m for m in chain if not (m in seen or seen.add(m))]
-
-    # Add an option to control the verbosity of cycle detection logs
-    def set_cycle_detection_verbosity(self, level):
-        """
-        Set the verbosity level for inheritance cycle detection logs
-
-        Args:
-            level: 'low' (minimal logging), 'medium' (standard), 'high' (detailed)
-        """
-        self.cycle_detection_verbosity = level
-
-    # Add a method to analyze inheritance relationships
-    def analyze_inheritance_structure(self):
-        """
-        Analyze the inheritance structure to find potential cycles
-
-        Returns:
-            List of detected inheritance cycles
-        """
-        cycles = []
-
-        # Track which models we've already checked to avoid redundant checks
-        checked_models = set()
-
-        for model_name in self.models.keys():
-            if model_name in checked_models:
-                continue
-
-            # Use a depth-first search to detect cycles
-            visited = set()
-            path = []
-            self._dfs_find_cycles(model_name, visited, path, cycles, checked_models)
-
-        return cycles
-
-    def _dfs_find_cycles(self, model_name, visited, path, cycles, checked_models):
-        """
-        Depth-first search to find inheritance cycles
-
-        Args:
-            model_name: Current model in the search
-            visited: Set of models visited in the current path
-            path: Current inheritance path
-            cycles: Output list to collect detected cycles
-            checked_models: Set of models that have been fully checked
-        """
-        # Mark as visited in current path
-        visited.add(model_name)
-        path.append(model_name)
-
-        # Check all inherited models
-        for inherited in self.inherits.get(model_name, []):
-            if inherited in path:
-                # Cycle detected
-                cycle_start = path.index(inherited)
-                cycle = path[cycle_start:] + [inherited]
-                cycles.append(cycle)
-            elif inherited not in checked_models:
-                self._dfs_find_cycles(inherited, visited.copy(), path.copy(), cycles, checked_models)
-
-        # Mark as fully checked
-        checked_models.add(model_name)
 
     def resolve_field_owner(self, field_name, model_name, check_existing=True):
         """
@@ -279,15 +178,14 @@ class ModelRegistry:
 
     def resolve_view_model(self, view_id, visited=None):
         """
-        Resolve the model associated with a view with cycle detection
+        Resolve the model associated with a view
         For inherited views, find the root view's model
         """
         if visited is None:
             visited = set()
 
         if view_id in visited:
-            # Detected a cycle in view inheritance
-            logger.warning(f"Detected view inheritance cycle for {view_id}")
+            # Prevent infinite loops
             return None
 
         visited.add(view_id)

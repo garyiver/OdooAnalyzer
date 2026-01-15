@@ -36,13 +36,13 @@ class MigrationAnalyzer:
         self.original_registry = ModelRegistry()
         self.original_fields = {}  # field_key -> field_info
         self.original_views = {}  # view_id -> view_info
-        self.original_view_fields = defaultdict(set)  # view_id -> set of field_keys
+        self.original_view_fields = defaultdict(set)  # (view_id, view_type) -> set of field_keys
         
         # Data structures for new codebase
         self.new_registry = ModelRegistry()
         self.new_fields = {}  # field_key -> field_info
         self.new_views = {}  # view_id -> view_info
-        self.new_view_fields = defaultdict(set)  # view_id -> set of field_keys
+        self.new_view_fields = defaultdict(set)  # (view_id, view_type) -> set of field_keys
         
     def analyze(self):
         """Perform the complete analysis of both codebases"""
@@ -172,7 +172,18 @@ class MigrationAnalyzer:
         
         # Store field usage in views
         # Note: parse_xml_file returns dicts, not FieldUsage objects
+        # Filter to only eligible modules
+        eligible_field_usage = {}
         for field_key, usages in field_usage.items():
+            eligible_usages = []
+            for usage in usages:
+                usage_module = usage.get('module', '')
+                if usage_module in self.eligible_modules:
+                    eligible_usages.append(usage)
+            if eligible_usages:
+                eligible_field_usage[field_key] = eligible_usages
+        
+        for field_key, usages in eligible_field_usage.items():
             for usage in usages:
                 # usage is a dict from to_dict()
                 record_type = usage.get('record_type', '')
@@ -180,16 +191,51 @@ class MigrationAnalyzer:
                     view_id = usage.get('context', '')
                     if view_id:
                         # Try to find view_id in views_dict (might need to check with/without module prefix)
+                        matched_view_id = None
                         if view_id in views_dict:
-                            view_fields_dict[view_id].add(field_key)
+                            matched_view_id = view_id
                         else:
-                            # Try to find by matching the end of the view_id
+                            # Try to find by matching the end of the view_id (without module prefix)
+                            # e.g., "view_competitor_price" should match "module.view_competitor_price"
+                            view_id_without_prefix = view_id.split('.')[-1] if '.' in view_id else view_id
                             for vid in views_dict.keys():
-                                if view_id.endswith(vid) or vid.endswith(view_id):
-                                    view_fields_dict[vid].add(field_key)
+                                vid_without_prefix = vid.split('.')[-1] if '.' in vid else vid
+                                if view_id_without_prefix == vid_without_prefix:
+                                    matched_view_id = vid
                                     break
+                            # Also try reverse - if view_id has module prefix, try matching without it
+                            if not matched_view_id and '.' in view_id:
+                                view_id_base = view_id.split('.', 1)[1]
+                                if view_id_base in views_dict:
+                                    matched_view_id = view_id_base
+                                else:
+                                    # Try matching base name
+                                    for vid in views_dict.keys():
+                                        if vid.endswith(view_id_base) or view_id_base.endswith(vid.split('.')[-1]):
+                                            matched_view_id = vid
+                                            break
+                        
+                        if matched_view_id:
+                            # Get view_type from view definition or usage
+                            view_type = views_dict[matched_view_id].get('view_type', '') or usage.get('view_type', '')
+                            # Use tuple of (view_id, view_type) as key to separate different view types
+                            view_key = (matched_view_id, view_type)
+                            view_fields_dict[view_key].add(field_key)
+                            if 'view_competitor_price' in view_id.lower() or 'offering' in field_key.lower():
+                                logger.info(f"DEBUG: Associated field '{field_key}' with view '{matched_view_id}' type '{view_type}' (from context '{view_id}')")
+                        else:
+                            # Log unmatched view_id for debugging (especially for views we care about)
+                            if 'view_competitor_price' in view_id.lower():
+                                logger.warning(f"Could not match view_id '{view_id}' to any registered view. Available views: {list(views_dict.keys())[:20]}")
+                            else:
+                                logger.debug(f"Could not match view_id '{view_id}' to any registered view. Available views: {list(views_dict.keys())[:10]}")
         
         logger.info(f"Stored field usage for {len(view_fields_dict)} views")
+        
+        # Debug: Log some view field associations
+        if logger.isEnabledFor(logging.DEBUG):
+            for vid, fields in list(view_fields_dict.items())[:5]:
+                logger.debug(f"View '{vid}' has {len(fields)} fields: {list(fields)[:5]}")
     
     def _generate_comparison_report(self):
         """Generate comparison report showing what's missing in new codebase"""
@@ -230,37 +276,117 @@ class MigrationAnalyzer:
         logger.info(f"Found {len(report['missing_views'])} missing views")
         
         # Find fields missing from views
-        for view_id, field_keys in self.original_view_fields.items():
-            if view_id in self.new_views:
-                # View exists in new codebase, check if fields are missing
-                new_fields = self.new_view_fields.get(view_id, set())
+        # First, create a mapping of view IDs (with and without module prefix) for better matching
+        original_view_id_map = {}
+        for vid in self.original_views.keys():
+            # Map both full ID and base name
+            original_view_id_map[vid] = vid
+            if '.' in vid:
+                base_name = vid.split('.', 1)[1]
+                original_view_id_map[base_name] = vid
+        
+        new_view_id_map = {}
+        for vid in self.new_views.keys():
+            new_view_id_map[vid] = vid
+            if '.' in vid:
+                base_name = vid.split('.', 1)[1]
+                new_view_id_map[base_name] = vid
+        
+        for view_key, field_keys in self.original_view_fields.items():
+            # view_key is now a tuple of (view_id, view_type)
+            view_id, view_type = view_key
+            
+            # Try to find matching view in new codebase (handle module prefix differences)
+            # Must match both view_id AND view_type
+            matched_new_view_key = None
+            matched_new_view_id = None
+            
+            # First try exact match
+            if view_key in self.new_view_fields:
+                matched_new_view_key = view_key
+                matched_new_view_id = view_id
+            else:
+                # Try matching by view_id and view_type separately
+                # Try matching view_id first
+                if view_id in self.new_views:
+                    matched_new_view_id = view_id
+                else:
+                    # Try matching by base name (without module prefix)
+                    view_base = view_id.split('.')[-1] if '.' in view_id else view_id
+                    for new_vid in self.new_views.keys():
+                        new_vid_base = new_vid.split('.')[-1] if '.' in new_vid else new_vid
+                        if view_base == new_vid_base:
+                            matched_new_view_id = new_vid
+                            logger.debug(f"Matched view '{view_id}' to '{matched_new_view_id}' by base name")
+                            break
+                
+                # Now find matching view_key with same view_type
+                if matched_new_view_id:
+                    for new_view_key in self.new_view_fields.keys():
+                        new_vid, new_vt = new_view_key
+                        if new_vid == matched_new_view_id and new_vt == view_type:
+                            matched_new_view_key = new_view_key
+                            break
+            
+            if matched_new_view_key:
+                # View exists in new codebase with same type, check if fields are missing
+                new_fields = self.new_view_fields.get(matched_new_view_key, set())
                 missing = field_keys - new_fields
+                
+                # Debug logging for specific view
+                if 'view_competitor_price' in view_id.lower():
+                    logger.info(f"DEBUG: Checking view '{view_id}' type '{view_type}' (matched to '{matched_new_view_id}')")
+                    logger.info(f"DEBUG: Original fields: {sorted(field_keys)}")
+                    logger.info(f"DEBUG: New fields: {sorted(new_fields)}")
+                    logger.info(f"DEBUG: Missing fields: {sorted(missing)}")
+                
+                # Also try matching field_keys by field name only (in case model names differ)
+                if missing:
+                    # Create a set of just field names from new_fields
+                    new_field_names = {fk.split('.')[-1] if '.' in fk else fk for fk in new_fields}
+                    for field_key in list(missing):
+                        field_name = field_key.split('.')[-1] if '.' in field_key else field_key
+                        if field_name in new_field_names:
+                            # Field exists but with different model prefix - might be OK, but log it
+                            logger.debug(f"Field '{field_name}' in view '{view_id}' type '{view_type}' has different model prefix in new codebase")
+                            missing.remove(field_key)
+                
                 for field_key in missing:
                     # Get field info
                     field_info = self.original_fields.get(field_key, {})
+                    field_name = field_key.split('.')[-1] if '.' in field_key else field_key
                     report['missing_view_fields'].append({
                         'view_id': view_id,
-                        'model': self.original_views[view_id].get('model', ''),
-                        'view_type': self.original_views[view_id].get('view_type', ''),
+                        'view_type': view_type,
+                        'matched_new_view_id': matched_new_view_id,
+                        'model': self.original_views.get(view_id, {}).get('model', ''),
                         'field_key': field_key,
-                        'field_name': field_info.get('field_name', ''),
+                        'field_name': field_name,
                         'module': field_info.get('module', '')
                     })
             else:
-                # View is completely missing - all its fields are missing
+                # View with this type is missing - all its fields are missing
                 for field_key in field_keys:
                     field_info = self.original_fields.get(field_key, {})
+                    field_name = field_key.split('.')[-1] if '.' in field_key else field_key
                     report['missing_view_fields'].append({
                         'view_id': view_id,
-                        'model': self.original_views[view_id].get('model', ''),
-                        'view_type': self.original_views[view_id].get('view_type', ''),
+                        'view_type': view_type,
+                        'matched_new_view_id': matched_new_view_id or '',
+                        'model': self.original_views.get(view_id, {}).get('model', ''),
                         'field_key': field_key,
-                        'field_name': field_info.get('field_name', ''),
+                        'field_name': field_name,
                         'module': field_info.get('module', ''),
-                        'note': 'View is completely missing'
+                        'note': f"View type '{view_type}' is missing" if matched_new_view_id else 'View is completely missing'
                     })
         
         logger.info(f"Found {len(report['missing_view_fields'])} missing field references in views")
+        
+        # Debug: Log some examples
+        if report['missing_view_fields']:
+            logger.info(f"Sample missing view fields (first 5):")
+            for item in report['missing_view_fields'][:5]:
+                logger.info(f"  View '{item['view_id']}': missing field '{item['field_name']}' (key: {item['field_key']})")
         
         return report
     
@@ -300,7 +426,7 @@ class MigrationAnalyzer:
         # Export missing view fields
         if report['missing_view_fields']:
             output_file = os.path.join(output_dir, 'migration_missing_view_fields.csv')
-            fieldnames = ['view_id', 'model', 'view_type', 'field_key', 'field_name', 'module', 'note']
+            fieldnames = ['view_id', 'view_type', 'matched_new_view_id', 'model', 'field_key', 'field_name', 'module', 'note']
             try:
                 with open(output_file, 'w', newline='', encoding='utf-8') as f:
                     writer = csv.DictWriter(f, fieldnames=fieldnames)

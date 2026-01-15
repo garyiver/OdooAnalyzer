@@ -1,0 +1,24 @@
+model,method,modules,module_count,total_overrides,severity
+account,move.action_post,"csl_account, sale_disable_auto_followers",2,2,medium
+purchase,order._prepare_invoice,"csl_account, csl_purchase",2,2,medium
+res,partner.create,"csl_account, csl_contacts",2,2,medium
+product,template.create,"csl_compress_product_image, csl_product",2,2,medium
+product,template.write,"csl_compress_product_image, csl_product",2,2,medium
+sale,order.line._prepare_procurement_values,"csl_custom, csl_project_repair",2,2,medium
+stock,rule._get_stock_move_values,"csl_custom, csl_project_repair",2,2,medium
+rma,expected_delivery.create,"csl_photos, csl_rma",2,2,medium
+project,task.create,"csl_photos, csl_project_repair",2,2,medium
+account,analytic.line.create,"csl_project_repair, project_repair_workflow",2,2,medium
+purchase,order.button_confirm,"csl_project_repair, csl_purchase",2,2,medium
+sale,order.action_cancel,"csl_project_repair, csl_website",2,2,medium
+sale,order.create,"csl_project_repair, sale_disable_auto_followers",2,2,medium
+sale,order.line.write,"csl_project_repair, csl_sale",2,2,medium
+project,task.type.unlink,"csl_rma, project_repair_workflow",2,2,medium
+sale,order.action_quotation_send,"csl_rma, csl_website",2,2,medium
+sale,order.action_confirm,"csl_project_repair, csl_rma, csl_sale, csl_website, sale_disable_auto_followers",5,5,high
+res,config.settings.set_values,"csl_product, csl_project_repair, csl_rma, sale_disable_auto_followers",4,4,high
+res,config.settings.get_values,"csl_product, csl_project_repair, csl_rma, sale_disable_auto_followers",4,4,high
+sale,order.write,"csl_project_repair, csl_rma, csl_sale, sale_disable_auto_followers",4,4,high
+project,task.write,"csl_project_repair, csl_project_repair_assignee_log, project_repair_workflow",3,3,high
+stock,picking.button_validate,"csl_project_repair, csl_rma, sale_disable_auto_followers",3,3,high
+sale,order.message_post,"csl_rma, csl_website, sale_disable_auto_followers",3,3,high

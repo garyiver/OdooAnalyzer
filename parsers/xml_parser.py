@@ -138,6 +138,64 @@ def find_parent_template_id(field_elem, root, max_depth=100):
 
     return None
 
+def _extract_fields_from_arch(arch_elem, registry, module, file_path, field_usages, record_id, classified_records):
+    """
+    Extract field elements from arch XML (the actual view structure)
+    
+    Args:
+        arch_elem: The <field name="arch"> element containing view XML
+        registry: Model registry
+        module: Module name
+        file_path: File path
+        field_usages: List to append field usages to
+        record_id: The view record ID
+        classified_records: Classified records dict (not used but kept for consistency)
+    """
+    # Get view info from registry
+    view_info = registry.views.get(record_id, {})
+    model_name = view_info.get('model', '')
+    view_type = view_info.get('view_type', '')
+    
+    # If view_type is not set, try to infer from arch root element
+    if not view_type:
+        # Check the root element of the arch (form, tree, kanban, etc.)
+        # If arch has type="xml", children are already parsed
+        if arch_elem.get('type') == 'xml':
+            # Children are already XML elements
+            for child in arch_elem:
+                if child.tag in ('form', 'tree', 'kanban', 'graph', 'pivot', 'calendar', 'gantt', 'activity', 'search'):
+                    view_type = child.tag
+                    # Update registry with inferred view type
+                    if record_id in registry.views:
+                        registry.views[record_id]['view_type'] = view_type
+                    break
+    
+    # Find all field elements in the arch
+    # These are the actual fields used in the view
+    # Search recursively through the arch XML
+    for field_elem in arch_elem.findall(".//field[@name]"):
+        field_name = field_elem.get('name')
+        if not field_name:
+            continue
+        
+        # Resolve field owner
+        field_key = None
+        if model_name:
+            field_owner = registry.resolve_field_owner(field_name, model_name)
+            if field_owner:
+                field_key = f"{field_owner}.{field_name}"
+            else:
+                field_key = f"{model_name}.{field_name}"
+        else:
+            field_key = field_name
+        
+        # Create field usage
+        usage = FieldUsage(field_key, record_id, module, file_path, model_name)
+        usage.record_type = RECORD_TYPE_VIEW
+        usage.view_type = view_type
+        field_usages.append(usage)
+
+
 def extract_view_definitions(root, registry, module):
     """Extract view definitions and models from XML"""
     # Extract view definitions (<record model="ir.ui.view">)
@@ -174,6 +232,24 @@ def extract_view_definitions(root, registry, module):
             type_field = record.find("./field[@name='type']")
             if type_field is not None and type_field.text:
                 view_type = type_field.text
+            else:
+                # Try to infer view type from arch XML if type field is not present
+                arch_field = record.find("./field[@name='arch']")
+                if arch_field is not None:
+                    # Check if arch has type="xml" and contains view structure
+                    if arch_field.get('type') == 'xml':
+                        # Look for root elements that indicate view type
+                        for child in arch_field:
+                            if child.tag in ('form', 'tree', 'kanban', 'graph', 'pivot', 'calendar', 'gantt', 'activity', 'search'):
+                                view_type = child.tag
+                                break
+                    # If arch is text content, try to parse it
+                    elif arch_field.text:
+                        # Try to extract view type from text (look for <form>, <tree>, etc.)
+                        import re
+                        match = re.search(r'<(\w+)(?:\s|>)', arch_field.text)
+                        if match and match.group(1) in ('form', 'tree', 'kanban', 'graph', 'pivot', 'calendar', 'gantt', 'activity', 'search'):
+                            view_type = match.group(1)
 
             # Register the view
             registry.register_view(record_id, model_name, inherit_id, view_type)
@@ -211,8 +287,37 @@ def extract_standard_fields(root, registry, module, file_path, field_usages, cla
     for field_elem in root.findall(".//field[@name]"):
         field_name = field_elem.get('name')
 
-        # Skip meta fields
-        if field_name in ('model', 'arch', 'inherit_id', 'priority', 'sequence', 'mode', 'type'):
+        # Handle arch field specially - it contains the view XML with actual fields
+        if field_name == 'arch':
+            # Extract fields from inside the arch XML
+            arch_root = field_elem
+            # The arch field can contain XML as text or as child elements
+            # Try to parse it as XML if it's a string
+            try:
+                # If arch has type="xml", the content is already parsed as XML
+                if field_elem.get('type') == 'xml' or field_elem.text:
+                    # Find the parent record
+                    record = find_parent_record(field_elem, root)
+                    if record is not None:
+                        record_id = None
+                        if record in classified_records:
+                            record_id = classified_records[record]['id']
+                        else:
+                            record_id = record.get('id')
+                            if record_id and '.' not in record_id:
+                                record_id = f"{module}.{record_id}"
+                        
+                        if record_id and record.get('model') == 'ir.ui.view':
+                            # Extract fields from arch XML
+                            _extract_fields_from_arch(arch_root, registry, module, file_path, 
+                                                     field_usages, record_id, classified_records)
+                            logger.debug(f"Extracted fields from arch for view {record_id}")
+            except Exception as e:
+                logger.debug(f"Error extracting fields from arch: {e}")
+            continue
+
+        # Skip other meta fields
+        if field_name in ('model', 'inherit_id', 'priority', 'sequence', 'mode', 'type'):
             continue
 
         # Find the containing record to determine the view

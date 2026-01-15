@@ -1,0 +1,31 @@
+MIGRATION ANALYSIS SUMMARY
+================================================================================
+
+Original Codebase: C:\Odoo\sh\src\user
+New Codebase: C:\Cursor\Odoo\csl_addons\odoo
+Eligible Modules: bista_convert_product, csl_account, csl_attendance, csl_competitor, csl_compress_product_image, csl_contacts, csl_custom, csl_hr, csl_invoice, csl_login, csl_photos, csl_product, csl_project_repair, csl_project_repair_assignee_log, csl_purchase, csl_rma, csl_sale, csl_timesheet, csl_utilities, csl_website, project_repair_workflow, project_repair_workflow_trigger, sale_disable_auto_followers
+
+================================================================================
+
+ORIGINAL CODEBASE STATISTICS
+  Fields: 1272
+  Views: 289
+  Views with fields: 370
+
+NEW CODEBASE STATISTICS
+  Fields: 1272
+  Views: 322
+  Views with fields: 418
+
+================================================================================
+
+MISSING ITEMS IN NEW CODEBASE
+  Missing Fields: 0
+  Missing Views: 0
+  Missing Field References in Views: 0
+
+================================================================================
+DETAILED REPORTS
+  - migration_missing_fields.csv: Fields defined in original but not in new
+  - migration_missing_views.csv: Views defined in original but not in new
+  - migration_missing_view_fields.csv: Fields used in views in original but not in new

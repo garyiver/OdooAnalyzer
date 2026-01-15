@@ -1,0 +1,16 @@
+module,field_count,extending_modules,reasons
+csl_account,76,,Contains 76 fields
+csl_purchase,11,,Contains 11 fields
+csl_custom,13,"csl_project_repair, csl_invoice, csl_rma","Extended by 3 modules: csl_project_repair, csl_invoice, csl_rma; Contains 13 fields"
+csl_attendance,17,,Contains 17 fields
+csl_contacts,66,,Contains 66 fields
+csl_product,257,csl_project_repair,Contains 257 fields; 9 fields used across multiple modules
+csl_rma,173,,Contains 173 fields
+csl_website,15,,Contains 15 fields
+csl_project_repair,366,,Contains 366 fields; 10 fields used across multiple modules
+csl_competitor,45,,Contains 45 fields
+csl_photos,53,,Contains 53 fields
+csl_sale,26,,Contains 26 fields
+csl_timesheet,30,,Contains 30 fields
+project_repair_workflow,48,"csl_project_repair, csl_rma","Extended by 2 modules: csl_project_repair, csl_rma; Contains 48 fields; 17 fields used across multiple modules"
+project_repair_workflow_trigger,19,project_repair_workflow,Contains 19 fields

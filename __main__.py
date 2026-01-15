@@ -25,8 +25,8 @@ from analysis.recommendations import generate_restructuring_recommendations
 from analysis.module_consolidation import analyze_module_consolidation
 from analysis.module_summary import generate_module_summary
 from analysis.migration_analysis import analyze_migration
+from analysis.csl_models import export_csl_models
 from utils.file_utils import get_safe_files, get_custom_modules
-from utils.cycle_management import CycleManager
 
 import config
 
@@ -60,12 +60,6 @@ def parse_args():
                         help='Analyze module consolidation opportunities (which modules to combine)')
     parser.add_argument('--eligible-modules', type=str, nargs='+', default=None,
                         help='List of module names eligible for consolidation (overrides auto-detection)')
-
-    # Add cycle detection options
-    parser.add_argument('--cycle-verbosity', choices=['low', 'medium', 'high'], default='low',
-                        help='Control verbosity of inheritance cycle detection logs')
-    parser.add_argument('--analyze-cycles', action='store_true',
-                        help='Perform a dedicated analysis of inheritance cycles')
     
     # Migration analysis options
     parser.add_argument('--analyze-migration', action='store_true',
@@ -92,8 +86,6 @@ def check_output_files_writable(output_dir, args):
     # Always created files
     output_files.append('fields_analysis.csv')
     output_files.append('method_overrides.csv')
-    output_files.append('inheritance_cycles.csv')
-    output_files.append('models_in_cycles.csv')
     
     # Conditionally created files
     if args.analyze_sharing:
@@ -106,9 +98,6 @@ def check_output_files_writable(output_dir, args):
             'shared_methods.csv',
             'utility_candidates.csv'
         ])
-    
-    if args.analyze_cycles:
-        output_files.append('inheritance_cycle_analysis.csv')
     
     if args.generate_recommendations:
         output_files.extend([
@@ -191,12 +180,6 @@ def main():
 
     # Initialize registry
     registry = ModelRegistry()
-
-    # Initialize cycle manager with specified verbosity
-    cycle_manager = CycleManager(verbosity=args.cycle_verbosity)
-
-    # Pass the cycle manager to the registry
-    registry.cycle_manager = cycle_manager
 
     try:
         # Parse manifest files to get module dependencies
@@ -338,6 +321,13 @@ def main():
         # Export method overrides
         export_csv(all_method_overrides, os.path.join(output_dir, 'method_overrides.csv'),
                    ['class', 'model', 'method', 'file_path', 'module'])
+        
+        # Export csl_* module models
+        try:
+            export_csl_models(registry, output_dir, base_dir=config.BASE_DIR)
+        except Exception as e:
+            logger.error(f"Error exporting csl_* models: {e}")
+            logger.error(traceback.format_exc())
         
         # Export model inheritance relationships
         inheritance_data = []
@@ -498,51 +488,6 @@ def main():
             except Exception as e:
                 logger.error(f"Error in advanced analysis: {e}")
                 logger.error(traceback.format_exc())
-
-        # Log cycle summary
-        cycle_manager.log_summary()
-
-        # Export cycle information
-        cycle_manager.export_to_csv(output_dir)
-
-        # Perform dedicated cycle analysis if requested
-        if args.analyze_cycles:
-            logger.info("Performing dedicated inheritance cycle analysis...")
-            cycles = registry.analyze_inheritance_structure()
-
-            # Export detailed cycle analysis with module information
-            cycle_data = []
-            for cycle in cycles:
-                # Build cycle string with model names
-                cycle_str = ' -> '.join(cycle)
-                
-                # Build cycle with module information
-                cycle_with_modules = []
-                modules_in_cycle = []
-                for model in cycle:
-                    module = registry._get_model_module(model)
-                    if module and module != 'unknown':
-                        cycle_with_modules.append(f"{model} ({module})")
-                        modules_in_cycle.append(module)
-                    else:
-                        cycle_with_modules.append(model)
-                        modules_in_cycle.append('unknown')
-                
-                cycle_with_modules_str = ' -> '.join(cycle_with_modules)
-                
-                cycle_data.append({
-                    'cycle': cycle_str,
-                    'cycle_with_modules': cycle_with_modules_str,
-                    'models': ', '.join(cycle),
-                    'modules': ', '.join(set(modules_in_cycle)),
-                    'module_count': len(set(modules_in_cycle))
-                })
-            
-            export_csv(
-                cycle_data,
-                os.path.join(output_dir, 'inheritance_cycle_analysis.csv'),
-                ['cycle', 'cycle_with_modules', 'models', 'modules', 'module_count']
-            )
 
         # Generate restructuring recommendations if requested
         if args.generate_recommendations:

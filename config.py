@@ -12,6 +12,7 @@ ELIGIBLE_MODULES_FOR_CORE = [
     'csl_compress_product_image',
     'csl_contacts',
     'csl_custom',
+    'csl_hr',
     'csl_invoice',
     'csl_login',
     'csl_photos',

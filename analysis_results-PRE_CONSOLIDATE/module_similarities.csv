@@ -1,0 +1,232 @@
+module1,module2,similarity_score,shared_models,shared_models_list,shared_methods,has_dependency,recommendation
+csl_custom,csl_sale,0.2727272727272727,3,"sale.order.line, stock.move, stock.move.line",0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_invoice,0.25,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_purchase,0.25,2,"res.company, res.partner",0,False,LOW: Low similarity - keep separate
+csl_account,csl_purchase,0.22727272727272727,5,"account.move, account.payment.register, purchase.order, purchase.order.line, res.partner",1,False,LOW: Low similarity - keep separate
+csl_contacts,csl_website,0.2222222222222222,2,"res.company, res.partner",0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_compress_product_image,0.2,1,product.template,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_login,0.16666666666666666,1,res.partner,0,False,LOW: Low similarity - keep separate
+csl_purchase,csl_website,0.15384615384615385,2,"res.company, res.partner",0,False,LOW: Low similarity - keep separate
+csl_photos,csl_rma,0.15151515151515152,5,"rma.expected_delivery, rma.product_line, stock.move.line, stock.picking, stock.production.lot",1,False,LOW: Low similarity - keep separate
+csl_attendance,csl_invoice,0.14285714285714285,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,sale_disable_auto_followers,0.14285714285714285,1,res.config.settings,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_photos,0.13333333333333333,2,"project.task.product, stock.move.line",0,False,LOW: Low similarity - keep separate
+csl_rma,csl_sale,0.12903225806451613,4,"sale.order, sale.order.line, stock.move, stock.move.line",2,False,LOW: Low similarity - keep separate
+csl_attendance,csl_contacts,0.125,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_invoice,0.125,1,account.move.line,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_purchase,0.125,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_rma,csl_website,0.125,4,"res.company, res.partner, rma.expected_delivery, sale.order",3,False,LOW: Low similarity - keep separate
+project_repair_workflow,csl_timesheet,0.125,2,"account.analytic.line, project.task",0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_website,0.1111111111111111,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,csl_timesheet,0.1111111111111111,1,project.task,0,False,LOW: Low similarity - keep separate
+csl_photos,csl_project_repair,0.10344827586206896,6,"product.template, project.task, project.task.accessories.product, project.task.product, stock.picking, stock.production.lot",1,False,LOW: Low similarity - keep separate
+csl_login,csl_purchase,0.1,1,res.partner,0,False,LOW: Low similarity - keep separate
+csl_rma,sale_disable_auto_followers,0.0967741935483871,3,"res.config.settings, sale.order, stock.picking",6,False,LOW: Low similarity - keep separate
+csl_custom,csl_rma,0.09375,3,"sale.order.line, stock.move, stock.move.line",0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_photos,0.09090909090909091,1,product.template,0,False,LOW: Low similarity - keep separate
+csl_login,csl_website,0.09090909090909091,1,res.partner,0,False,LOW: Low similarity - keep separate
+csl_photos,csl_project_repair_assignee_log,0.09090909090909091,1,project.task,0,False,LOW: Low similarity - keep separate
+csl_product,csl_project_repair,0.09090909090909091,7,"product.basecode, product.manufacturer, product.product, product.series, product.techcode, product.template, res.config.settings",2,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,project_repair_workflow,0.09090909090909091,1,project.task,1,False,LOW: Low similarity - keep separate
+csl_attendance,csl_purchase,0.08333333333333333,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_purchase,sale_disable_auto_followers,0.08333333333333333,1,account.move,0,False,LOW: Low similarity - keep separate
+csl_sale,sale_disable_auto_followers,0.08333333333333333,1,sale.order,2,False,LOW: Low similarity - keep separate
+project_repair_workflow,project_repair_workflow_trigger,0.08333333333333333,1,project.repair.task.workflow.trigger,0,False,LOW: Low similarity - keep separate
+csl_project_repair,csl_rma,0.07894736842105263,6,"res.config.settings, sale.order, sale.order.line, stock.picking, stock.picking.type, stock.production.lot",5,False,LOW: Low similarity - keep separate
+csl_account,csl_website,0.07692307692307693,2,"payment.transaction, res.partner",0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_website,0.07692307692307693,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_photos,0.07692307692307693,1,product.template,0,False,LOW: Low similarity - keep separate
+csl_website,sale_disable_auto_followers,0.07692307692307693,1,sale.order,2,False,LOW: Low similarity - keep separate
+csl_project_repair,sale_disable_auto_followers,0.07142857142857142,4,"res.config.settings, sale.advance.payment.inv, sale.order, stock.picking",6,False,LOW: Low similarity - keep separate
+csl_sale,csl_website,0.07142857142857142,1,sale.order,1,False,LOW: Low similarity - keep separate
+csl_custom,csl_project_repair,0.07017543859649122,4,"project.task.product, sale.order.line, stock.rule, tmp.cttq.product",2,False,LOW: Low similarity - keep separate
+csl_contacts,csl_rma,0.06896551724137931,2,"res.company, res.partner",0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_product,0.06666666666666667,2,"product.template, res.config.settings",2,False,LOW: Low similarity - keep separate
+csl_photos,sale_disable_auto_followers,0.06666666666666667,1,stock.picking,0,False,LOW: Low similarity - keep separate
+csl_photos,csl_sale,0.0625,1,stock.move.line,0,False,LOW: Low similarity - keep separate
+csl_purchase,csl_rma,0.06060606060606061,2,"res.company, res.partner",0,False,LOW: Low similarity - keep separate
+csl_photos,csl_website,0.058823529411764705,1,rma.expected_delivery,0,False,LOW: Low similarity - keep separate
+csl_photos,csl_timesheet,0.058823529411764705,1,project.task,0,False,LOW: Low similarity - keep separate
+csl_product,csl_website,0.05555555555555555,2,"product.template.attribute.value, res.company",0,False,LOW: Low similarity - keep separate
+csl_photos,project_repair_workflow,0.05263157894736842,1,project.task,0,False,LOW: Low similarity - keep separate
+csl_account,csl_invoice,0.047619047619047616,1,account.move.line,0,False,LOW: Low similarity - keep separate
+csl_account,csl_contacts,0.045454545454545456,1,res.partner,1,False,LOW: Low similarity - keep separate
+csl_account,csl_login,0.043478260869565216,1,res.partner,0,False,LOW: Low similarity - keep separate
+csl_account,sale_disable_auto_followers,0.04,1,account.move,1,False,LOW: Low similarity - keep separate
+csl_account,csl_custom,0.038461538461538464,1,account.move.line,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_project_repair,0.037037037037037035,2,"product.template, res.config.settings",0,False,LOW: Low similarity - keep separate
+csl_product,csl_rma,0.03571428571428571,2,"res.company, res.config.settings",2,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_rma,0.034482758620689655,1,res.config.settings,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_rma,0.034482758620689655,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_project_repair,csl_purchase,0.03389830508474576,2,"purchase.order, purchase.order.line",1,False,LOW: Low similarity - keep separate
+csl_project_repair,csl_sale,0.03389830508474576,2,"sale.order, sale.order.line",3,False,LOW: Low similarity - keep separate
+csl_project_repair,csl_timesheet,0.03333333333333333,2,"account.analytic.line, project.task",0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_product,0.03225806451612903,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_login,csl_rma,0.03225806451612903,1,res.partner,0,False,LOW: Low similarity - keep separate
+csl_project_repair,project_repair_workflow,0.03225806451612903,2,"account.analytic.line, project.task",2,False,LOW: Low similarity - keep separate
+csl_contacts,csl_product,0.03125,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_rma,0.030303030303030304,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_product,0.030303030303030304,1,product.template,0,False,LOW: Low similarity - keep separate
+csl_login,csl_product,0.030303030303030304,1,res.users,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_product,0.02857142857142857,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_product,sale_disable_auto_followers,0.02857142857142857,1,res.config.settings,2,False,LOW: Low similarity - keep separate
+csl_rma,csl_timesheet,0.02857142857142857,1,project.project,0,False,LOW: Low similarity - keep separate
+csl_account,csl_project_repair,0.027777777777777776,2,"purchase.order, purchase.order.line",0,False,LOW: Low similarity - keep separate
+csl_product,csl_purchase,0.027777777777777776,1,res.company,0,False,LOW: Low similarity - keep separate
+csl_rma,project_repair_workflow,0.02702702702702703,1,project.task.type,1,False,LOW: Low similarity - keep separate
+csl_photos,csl_product,0.02564102564102564,1,product.template,0,False,LOW: Low similarity - keep separate
+csl_account,csl_rma,0.02127659574468085,1,res.partner,0,False,LOW: Low similarity - keep separate
+csl_project_repair,csl_project_repair_assignee_log,0.01818181818181818,1,project.task,1,False,LOW: Low similarity - keep separate
+csl_competitor,csl_project_repair,0.017543859649122806,1,product.template,0,False,LOW: Low similarity - keep separate
+csl_project_repair,csl_website,0.01639344262295082,1,sale.order,2,False,LOW: Low similarity - keep separate
+csl_account,csl_attendance,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_competitor,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_compress_product_image,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_photos,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_account,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_competitor,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_compress_product_image,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_custom,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_login,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_photos,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_project_repair,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_attendance,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_contacts,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_custom,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_invoice,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_login,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_purchase,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_rma,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_website,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_competitor,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_contacts,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_custom,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_invoice,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_login,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_purchase,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_website,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_compress_product_image,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_custom,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_photos,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_project_repair,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_contacts,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_login,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_purchase,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_website,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_custom,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_login,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_photos,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_project_repair,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_invoice,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,csl_photos,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,csl_project_repair,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_login,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_photos,csl_purchase,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_photos,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_photos,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_photos,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_product,csl_project_repair_assignee_log,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_product,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_product,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_product,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_product,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_product,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_product,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,csl_purchase,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,csl_rma,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,csl_website,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_project_repair_assignee_log,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_purchase,csl_sale,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_purchase,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_purchase,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_purchase,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_purchase,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_purchase,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_rma,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_rma,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_rma,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_sale,csl_utilities,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_sale,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_sale,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_sale,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_sale,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_utilities,csl_website,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_utilities,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_utilities,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_utilities,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_utilities,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_utilities,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_website,project_repair_workflow,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_website,project_repair_workflow_trigger,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_website,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_website,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+project_repair_workflow,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+project_repair_workflow,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+project_repair_workflow_trigger,sale_disable_auto_followers,0.0,0,,0,False,LOW: Low similarity - keep separate
+project_repair_workflow_trigger,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+project_repair_workflow_trigger,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+sale_disable_auto_followers,csl_timesheet,0.0,0,,0,False,LOW: Low similarity - keep separate
+sale_disable_auto_followers,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate
+csl_timesheet,bista_convert_product,0.0,0,,0,False,LOW: Low similarity - keep separate

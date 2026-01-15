@@ -1,0 +1,5 @@
+module,will_depend_on_csl_core,currently_depends_on
+csl_invoice,Yes,csl_custom
+csl_project_repair,Yes,"csl_custom, csl_product, project_repair_workflow"
+csl_rma,Yes,"csl_custom, project_repair_workflow"
+project_repair_workflow,Yes,project_repair_workflow_trigger
